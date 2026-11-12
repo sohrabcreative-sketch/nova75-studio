@@ -3,7 +3,12 @@
 An unofficial browser configurator for the AULA NOVA75 keyboard. It talks to the keyboard directly
 over WebHID: no installer, no account, nothing sent to a server.
 
-## Run it
+**Use it online:** https://sohrabcreative-sketch.github.io/nova75-studio/ (Chrome, Edge or Opera on a
+computer). Close the official AULA driver first, press **Connect keyboard**, and pick your keyboard.
+
+Not affiliated with AULA. Use at your own risk: see "Verification status" below.
+
+## Run it locally
 
 ```bash
 npm start
