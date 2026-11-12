@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nova75 Studio — configure the AULA NOVA75 in your browser</title>
+    <meta name="description" content="Unofficial browser configurator for the AULA NOVA75 keyboard. Runs locally over WebHID." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <span class="name">Nova75 Studio</span>
+        <span class="tag">unofficial</span>
+      </div>
+      <nav class="tabs" id="tabs" aria-label="Sections">
+        <button data-tab="home" class="active">Home</button>
+        <button data-tab="lighting">Lighting</button>
+        <button data-tab="colours">Per-key colours</button>
+        <button data-tab="keys">Keys</button>
+        <button data-tab="screen">Screen</button>
+        <button data-tab="settings">Settings</button>
+        <button data-tab="tester">Tester</button>
+        <button data-tab="log">Log</button>
+      </nav>
+      <div class="conn">
+        <span class="pill" id="status">Not connected</span>
+        <button class="btn small" id="disconnect" hidden>Disconnect</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- ───────────── Home ───────────── -->
+      <section data-panel="home" class="panel active">
+        <div class="hero">
+          <h1>Your NOVA75, configured in the browser.</h1>
+          <p class="lead">
+            Lighting, per-key colours, key remapping, the screen and keyboard settings — sent straight from this page to
+            the keyboard over WebHID. Nothing is installed and nothing leaves your computer.
+          </p>
+          <div class="row">
+            <button class="btn primary" id="connect">Connect keyboard</button>
+            <button class="btn" id="demo-usb">Try demo (USB cable)</button>
+            <button class="btn" id="demo-dongle">Try demo (2.4G receiver)</button>
+          </div>
+          <p class="note" id="support"></p>
+        </div>
+
+        <div class="notice warn" id="unrecognised" hidden>
+          <strong>This keyboard does not identify itself as a NOVA75.</strong>
+          <span id="unrecognised-name"></span>
+          Other keyboards share the same USB identity but have different key positions and screen limits. Writing is
+          locked until you confirm.
+          <label class="check"><input type="checkbox" id="confirm-model" /> It is an AULA NOVA75</label>
+        </div>
+
+        <div class="cards" id="device-card" hidden>
+          <div class="card">
+            <h3>Connected keyboard</h3>
+            <dl id="device-info"></dl>
+          </div>
+          <div class="card">
+            <h3>Available on this connection</h3>
+            <ul class="features" id="feature-list"></ul>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <h3>USB cable</h3>
+            <p>
+              Everything: lighting effects, per-key colours, both key layers, image and GIF upload to the 240×135
+              screen, clock sync and settings. Put the switch on the back in the wired position.
+            </p>
+          </div>
+          <div class="card">
+            <h3>2.4G receiver</h3>
+            <p>
+              Battery level, lighting effect, sleep timer, key response and game mode. Keys, per-key colours and the
+              screen need the cable — the official driver has the same limit.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Before you write</h3>
+            <p>
+              The keyboard can't report most of its configuration, so this page shows what it last sent from this
+              browser. The protocol comes from the official driver as documented by the OpenKey project; treat writes
+              as experimental until you've seen each one work on your board.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────── Lighting ───────────── -->
+      <section data-panel="lighting" class="panel">
+        <div class="panel-head">
+          <h2>Lighting</h2>
+          <p>Choose an effect and press Apply. Each Apply saves to the keyboard's memory.</p>
+        </div>
+        <div class="split">
+          <div class="card">
+            <h3>Effect</h3>
+            <div class="effects" id="effects" role="radiogroup" aria-label="Lighting effect"></div>
+          </div>
+          <div class="card controls">
+            <h3>Options</h3>
+            <label class="field" id="f-color">
+              <span>Colour</span>
+              <input type="color" id="l-color" />
+            </label>
+            <label class="check" id="f-colorful"><input type="checkbox" id="l-colorful" /> Cycle through colours instead</label>
+            <label class="field">
+              <span>Brightness <output id="l-brightness-out"></output></span>
+              <input type="range" id="l-brightness" min="0" max="6" step="1" />
+            </label>
+            <label class="field" id="f-speed">
+              <span>Speed <output id="l-speed-out"></output></span>
+              <input type="range" id="l-speed" min="0" max="6" step="1" />
+            </label>
+            <label class="field" id="f-direction">
+              <span>Direction</span>
+              <select id="l-direction"></select>
+            </label>
+            <button class="btn primary needs-kb" id="l-apply">Apply to keyboard</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────── Per-key colours ───────────── -->
+      <section data-panel="colours" class="panel">
+        <div class="panel-head">
+          <h2>Per-key colours</h2>
+          <p>Pick a colour, then click or drag across keys. Writing switches the keyboard to its custom-colour mode.</p>
+        </div>
+        <div class="toolbar">
+          <label class="field inline"><span>Brush</span><input type="color" id="c-brush" value="#ff8a3d" /></label>
+          <div class="swatches" id="c-swatches"></div>
+          <button class="btn small" id="c-fill">Fill all keys</button>
+          <label class="field inline"><span>Brightness</span><input type="range" id="c-brightness" min="1" max="6" step="1" value="6" style="width: 110px" /></label>
+          <span class="spacer"></span>
+          <button class="btn small needs-usb" id="c-read">Read from keyboard</button>
+          <button class="btn primary small needs-usb" id="c-write">Write to keyboard</button>
+        </div>
+        <div class="kb paint" id="kb-colours"></div>
+        <p class="note usb-only-note">Per-key colours need the USB cable.</p>
+      </section>
+
+      <!-- ───────────── Keys ───────────── -->
+      <section data-panel="keys" class="panel">
+        <div class="panel-head">
+          <h2>Keys</h2>
+          <p>
+            Click a key to change what it does. Changes stay on this page until you write the layer to the keyboard.
+            The Fn key itself can't be changed.
+          </p>
+        </div>
+        <div class="toolbar">
+          <div class="seg" id="k-layer" role="tablist" aria-label="Layer">
+            <button data-layer="base" class="active">Base layer</button>
+            <button data-layer="fn">Fn layer</button>
+          </div>
+          <span class="badge" id="k-dirty" hidden>Unwritten changes</span>
+          <span class="spacer"></span>
+          <button class="btn small" id="k-reset">Clear this layer</button>
+          <button class="btn primary small needs-usb" id="k-write">Write layer to keyboard</button>
+        </div>
+        <div class="kb" id="kb-keys"></div>
+        <div class="card editor" id="k-editor" hidden>
+          <h3 id="k-title">Key</h3>
+          <div class="row wrap">
+            <label class="field">
+              <span>Action</span>
+              <select id="k-kind">
+                <option value="default">Default (what's printed on the key)</option>
+                <option value="keyboard">Keyboard key or shortcut</option>
+                <option value="consumer">Media key</option>
+                <option value="mouse">Mouse button</option>
+                <option value="disabled">Disabled</option>
+              </select>
+            </label>
+            <label class="field" id="k-usage-f"><span>Key</span><select id="k-usage"></select></label>
+            <div class="field" id="k-mods-f"><span>With</span><div class="row" id="k-mods"></div></div>
+            <label class="field" id="k-media-f"><span>Media key</span><select id="k-media"></select></label>
+            <label class="field" id="k-mouse-f"><span>Mouse</span><select id="k-mouse"></select></label>
+          </div>
+        </div>
+        <p class="note">
+          The keyboard can't report its key assignments. This shows what this browser last wrote; a layer written here
+          replaces the whole layer on the keyboard.
+        </p>
+        <p class="note usb-only-note">Key remapping needs the USB cable.</p>
+      </section>
+
+      <!-- ───────────── Screen ───────────── -->
+      <section data-panel="screen" class="panel">
+        <div class="panel-head">
+          <h2>Screen</h2>
+          <p>Send a picture or an animated GIF to the 240×135 display. Up to 107 frames.</p>
+        </div>
+        <div class="split">
+          <div class="card controls">
+            <h3>Image</h3>
+            <label class="drop" id="s-drop">
+              <input type="file" id="s-file" accept="image/*" />
+              <span>Choose a picture or GIF, or drop it here</span>
+            </label>
+            <label class="field">
+              <span>Fit</span>
+              <select id="s-fit">
+                <option value="cover">Fill the screen (crop edges)</option>
+                <option value="contain">Show everything (add bars)</option>
+                <option value="stretch">Stretch</option>
+              </select>
+            </label>
+            <label class="field inline"><span>Bar colour</span><input type="color" id="s-bg" value="#000000" /></label>
+          </div>
+          <div class="card">
+            <h3>Preview</h3>
+            <div class="screen-frame"><canvas id="s-canvas" width="240" height="135"></canvas></div>
+            <p class="note" id="s-info">No image chosen.</p>
+            <div class="progress" id="s-progress" hidden><div id="s-bar"></div></div>
+            <button class="btn primary needs-usb" id="s-upload" disabled>Upload to keyboard</button>
+            <p class="note">
+              Keep the cable plugged in and don't close this tab during an upload. A long GIF takes several minutes.
+            </p>
+          </div>
+        </div>
+        <p class="note usb-only-note">The screen can only be updated over the USB cable.</p>
+      </section>
+
+      <!-- ───────────── Settings ───────────── -->
+      <section data-panel="settings" class="panel">
+        <div class="panel-head">
+          <h2>Settings</h2>
+          <p>All settings are sent together when you press Apply.</p>
+        </div>
+        <div class="split">
+          <div class="card controls">
+            <h3>Keyboard</h3>
+            <label class="field"><span>Sleep after</span><select id="t-sleep"></select></label>
+            <label class="field"><span>Key response (1 = fastest)</span><select id="t-response"></select></label>
+            <div class="usb-only">
+              <label class="check"><input type="checkbox" id="t-win" /> Disable the Win key</label>
+              <label class="check"><input type="checkbox" id="t-alttab" /> Disable Alt+Tab</label>
+              <label class="check"><input type="checkbox" id="t-altf4" /> Disable Alt+F4</label>
+            </div>
+            <div class="dongle-only">
+              <label class="check"><input type="checkbox" id="t-game" /> Game mode (locks Win, Alt+Tab and Alt+F4)</label>
+            </div>
+            <button class="btn primary needs-kb" id="t-apply">Apply to keyboard</button>
+          </div>
+          <div class="card controls usb-only">
+            <h3>Clock</h3>
+            <p>Sets the clock shown on the keyboard's screen to this computer's time.</p>
+            <button class="btn needs-usb" id="t-clock">Sync clock now</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────── Tester ───────────── -->
+      <section data-panel="tester" class="panel">
+        <div class="panel-head">
+          <h2>Key tester</h2>
+          <p>Press every key; each one lights up once it has registered. Works on any connection, no setup needed.</p>
+        </div>
+        <div class="toolbar">
+          <span class="badge" id="x-count">0 / 79 keys</span>
+          <span class="note" id="x-last"></span>
+          <span class="spacer"></span>
+          <button class="btn small" id="x-reset">Reset</button>
+        </div>
+        <div class="kb" id="kb-tester"></div>
+        <p class="note">
+          While this tab is open, key presses are kept on this page (Tab, F5 and so on won't do their usual thing). The
+          Fn key and the knob don't send anything a web page can see.
+        </p>
+      </section>
+
+      <!-- ───────────── Log ───────────── -->
+      <section data-panel="log" class="panel">
+        <div class="panel-head">
+          <h2>Packet log</h2>
+          <p>Every report sent to and received from the keyboard in this session. Useful when something doesn't work.</p>
+        </div>
+        <div class="toolbar">
+          <span class="spacer"></span>
+          <button class="btn small" id="g-copy">Copy</button>
+          <button class="btn small" id="g-clear">Clear</button>
+        </div>
+        <pre class="log" id="g-log" tabindex="0"></pre>
+      </section>
+    </main>
+
+    <footer>
+      Not affiliated with AULA. Protocol knowledge from the <a href="https://github.com/BakulBd/openkey" target="_blank" rel="noreferrer">OpenKey</a> project (MIT).
+    </footer>
+
+    <dialog id="consent">
+      <h3>Before the first write</h3>
+      <p>
+        This is an unofficial tool. Its commands are the ones the official driver sends, but they have not been
+        verified on NOVA75 hardware by this app's authors. It never sends firmware-update, reset or erase commands.
+      </p>
+      <p>If something looks wrong afterwards, the official AULA driver can restore the keyboard's settings.</p>
+      <form method="dialog" class="row end">
+        <button class="btn" value="no">Cancel</button>
+        <button class="btn primary" value="yes">I understand, continue</button>
+      </form>
+    </dialog>
+
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

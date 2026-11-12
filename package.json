@@ -1,0 +1,12 @@
+{
+  "name": "nova75-studio",
+  "version": "0.1.0",
+  "description": "Unofficial browser configurator for the AULA NOVA75 keyboard (WebHID)",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/"
+  }
+}
