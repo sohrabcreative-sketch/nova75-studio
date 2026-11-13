@@ -14,7 +14,7 @@ Not affiliated with AULA. Use at your own risk: see "Verification status" below.
 npm start
 ```
 
-Then open http://localhost:5175 in Chrome, Edge or Opera on a computer (WebHID needs one of those,
+Then open (https://nova75.netlify.app) in Chrome, Edge or Opera on a computer (WebHID needs one of those,
 and a secure origin: `localhost` or HTTPS). There is no build step and there are no dependencies; the
 folder is a static site, so it can also be hosted as-is on Vercel, Netlify, GitHub Pages and the like.
 
